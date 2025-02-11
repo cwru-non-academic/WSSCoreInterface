@@ -252,11 +252,7 @@ public class SerialToWSS
 
     private void queueWriteToWSS(byte msgID, byte[] message, int lenght)
     {
-<<<<<<< HEAD
-        if((msgID >0x2F && msgID<0x34)) //stream msges do not go into queue because they have no response
-=======
         if(msgID >0x2F && msgID<0x34) //stream msges do not go into queue because they have no response
->>>>>>> main
         {
             WriteToWSS(message, lenght);
         } else

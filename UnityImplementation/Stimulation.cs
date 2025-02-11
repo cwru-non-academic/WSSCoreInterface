@@ -8,12 +8,8 @@ public class Stimulation : MonoBehaviour
 {
     [SerializeField] public bool forcePort = false;
     [SerializeField] private bool testMode = true;
-<<<<<<< HEAD
     [SerializeField] public string comPort = "COM7";
-=======
-    [SerializeField] private string comPort = "COM7";
     [SerializeField] private StimConfigController config;
->>>>>>> main
 
     private const float delay = 0.1f;// delay between mesages to the WSS to avoid congestion on the radio
     private int maxWSS = 1;
@@ -109,15 +105,6 @@ public class Stimulation : MonoBehaviour
 
     void OnDisable()
     {
-<<<<<<< HEAD
-        running = false;
-        if (!testMode)
-        {
-            WSS.zero_out_stim();
-            WSS.releaseCOM_port();
-        }
-        ready = false;
-=======
         if (!testMode)
         {
             running = false;
@@ -125,7 +112,7 @@ public class Stimulation : MonoBehaviour
             WSS.releaseCOM_port();
             ready = false;
         }
->>>>>>> main
+
     }
 
     #region "Stimulation methods"
@@ -228,7 +215,6 @@ public class Stimulation : MonoBehaviour
         Debug.Log("sent start stim msg");
         StartCoroutine(UpdateCoroutine());
     }
-
 
     public void StopStimulation()
     {
