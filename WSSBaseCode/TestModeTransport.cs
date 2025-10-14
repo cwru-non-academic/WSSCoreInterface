@@ -162,7 +162,7 @@ public sealed class TestModeTransport : ITransport
         if (req == null || req.Length < 5) return Task.FromResult(Array.Empty<byte>());
 
         // Strip trailing END (0xC0) if present
-        int endIdx = req[^1] == 0xC0 ? req.Length - 1 : req.Length;
+        int endIdx = req[req.Length - 1] == 0xC0 ? req.Length - 1 : req.Length;
         var preEscaped = req.AsSpan(0, endIdx);
 
         // Unescape and validate: frame = [S][T][payload...][CKS]

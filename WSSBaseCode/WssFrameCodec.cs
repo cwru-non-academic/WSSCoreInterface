@@ -122,7 +122,7 @@ public sealed class WssFrameCodec : IFrameCodec
         // Compute checksum over everything except the trailing checksum byte.
         var data = tmp.ToArray();
         byte computed = ComputeChecksum(data, trailerBytesToSkip: 1);
-        byte expected = data[^1];
+        byte expected = data[data.Length - 1];
         output = data;
         return computed == expected;
     }

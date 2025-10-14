@@ -187,7 +187,8 @@ public sealed class ModelParamsLayer : IModelParamsCore
         // time + derivative bookkeeping
         _currentMag[idx] = Clamp01(magnitude01);
         float tNow = _timer.ElapsedMilliseconds / 1000.0f;
-        float dt = MathF.Max(1e-5f, tNow - _tPrev[idx]);
+        // Avoid MathF for netstandard2.0: compute with double and cast back
+        float dt = (float)Math.Max(1e-5, (double)tNow - _tPrev[idx]);
         _d_dt[idx] = (_currentMag[idx] - _prevMagnitude[idx]) / dt;
         _tPrev[idx] = tNow;
         _prevMagnitude[idx] = _currentMag[idx];

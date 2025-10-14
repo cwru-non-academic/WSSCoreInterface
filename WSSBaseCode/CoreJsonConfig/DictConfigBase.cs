@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 /// </summary>
 public abstract class DictConfigBase
 {
-    protected readonly object _sync = new();
+    protected readonly object _sync = new object();
     /// <summary>Root JSON object for this configuration.</summary>
     protected JObject _root;
     /// <summary>Resolved file path used for persistence.</summary>
@@ -78,7 +78,7 @@ public abstract class DictConfigBase
                 if (cur[p] is not JObject next) { next = new JObject(); cur[p] = next; }
                 cur = next;
             }
-            cur[parts[^1]] = value;
+            cur[parts[parts.Length - 1]] = value;
         }
     }
 }

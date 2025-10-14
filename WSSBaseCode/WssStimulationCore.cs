@@ -27,8 +27,8 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     // ---- runtime state ----
     private CoreState _state = CoreState.Disconnected;
     private int _currentSetupTries;
-    private readonly Dictionary<WssTarget, int> _cursor = new(); // per-target step index
-    private readonly Dictionary<WssTarget, List<Func<Task<string>>>> _steps = new();
+    private readonly Dictionary<WssTarget, int> _cursor = new Dictionary<WssTarget, int>(); // per-target step index
+    private readonly Dictionary<WssTarget, List<Func<Task<string>>>> _steps = new Dictionary<WssTarget, List<Func<Task<string>>>>();
     private int _maxWSS = 1;
     private readonly SemaphoreSlim _setupGate = new(1, 1);
 
@@ -82,7 +82,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     /// <inheritdoc/>
     public void Initialize()
     {
-        if (_state is CoreState.Ready or CoreState.SettingUp) Shutdown();
+        if (_state == CoreState.Ready || _state == CoreState.SettingUp) Shutdown();
 
         _currentSetupTries = 0;
 
@@ -120,7 +120,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
                     Log.Error("Connect failed: " + _connectTask.Exception?.GetBaseException().Message);
                     _state = CoreState.Error;
                 }
-                else if (_connectTask.IsCompletedSuccessfully)
+                else if (_connectTask.IsCompleted && !_connectTask.IsFaulted && !_connectTask.IsCanceled)
                 {
                     NormalSetup();                // seed all targets once
                     _state = CoreState.SettingUp;
@@ -285,7 +285,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     /// <inheritdoc/>
     public void UpdateIPD(int IPD, WssTarget targetWSS = WssTarget.Broadcast)
     {
-        int _currentIPD = Math.Clamp(IPD, 1, 1000);
+        int _currentIPD = Math.Max(1, Math.Min(IPD, 1000));
 
         _ = ScheduleSetupChangeAsync(targetWSS,
             () => StepLogger(_wss.EditEventPw(1, new[] { 0, 0, _currentIPD }, targetWSS), $"UpdateIPD[{targetWSS}], Event[1]"),
@@ -297,7 +297,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     /// <inheritdoc/>
     public void UpdateIPD(int IPD, int eventID, WssTarget targetWSS = WssTarget.Broadcast)
     {
-        int _currentIPD = Math.Clamp(IPD, 1, 1000);
+        int _currentIPD = Math.Max(1, Math.Min(IPD, 1000));
 
         _ = ScheduleSetupChangeAsync(targetWSS,
             () => StepLogger(_wss.EditEventPw(eventID, new[] { 0, 0, _currentIPD }, targetWSS), $"UpdateIPD[{targetWSS}], Event[{eventID}]")
@@ -477,7 +477,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     /// <summary>Background task that pushes streaming packets to each WSS at ~12ms cadence.</summary>
     private void StartStreamingInternal()
     {
-        if (_streamTask is { IsCompleted: false }) return;
+        if (_streamTask != null && !_streamTask.IsCompleted) return;
         _streamCts = new CancellationTokenSource();
         var tk = _streamCts.Token;
 
@@ -573,7 +573,7 @@ public sealed class WssStimulationCore : IStimulationCore, IBasicStimulation
     /// <summary>Start the background runner if needed.</summary>
     private void EnsureSetupRunner()
     {
-        if (_setupRunner is { IsCompleted: false }) return;
+        if (_setupRunner != null && !_setupRunner.IsCompleted) return;
         _setupRunner = Task.Run(SetupWorkerAsync);
     }
 

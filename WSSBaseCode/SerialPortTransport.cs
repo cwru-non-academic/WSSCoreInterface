@@ -1,9 +1,10 @@
 ﻿using System;
-using System.IO.Ports;
+using RJCP.IO.Ports;
+using Parity = RJCP.IO.Ports.Parity;
+using StopBits = RJCP.IO.Ports.StopBits;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using System.Management;
 
 /// <summary>
 /// Serial-port implementation of <see cref="ITransport"/> for WSS communications.
@@ -19,7 +20,7 @@ using System.Management;
 /// </remarks>
 public sealed class SerialPortTransport : ITransport
 {
-    private readonly SerialPort _port;
+    private readonly SerialPortStream _port;
     private CancellationTokenSource _cts;
     private Task _readLoop;
 
@@ -38,7 +39,11 @@ public sealed class SerialPortTransport : ITransport
     public SerialPortTransport(string portName, int baud = 115200, Parity parity = Parity.None,
                                int dataBits = 8, StopBits stopBits = StopBits.One, int readTimeoutMs = 10)
     {
-        _port = new SerialPort(portName, baud, parity, dataBits, stopBits) { ReadTimeout = readTimeoutMs };
+        _port = new SerialPortStream(portName, baud, dataBits, parity, stopBits)
+        {
+            ReadTimeout = readTimeoutMs,
+            WriteTimeout = 1000
+        };
     }
 
     /// <summary>
@@ -55,7 +60,11 @@ public sealed class SerialPortTransport : ITransport
     public SerialPortTransport(int baud = 115200, Parity parity = Parity.None,
                                int dataBits = 8, StopBits stopBits = StopBits.One, int readTimeoutMs = 10)
     {
-        _port = new SerialPort(GetComPort(), baud, parity, dataBits, stopBits) { ReadTimeout = readTimeoutMs };
+        _port = new SerialPortStream(GetComPort(), baud, dataBits, parity, stopBits)
+        {
+            ReadTimeout = readTimeoutMs,
+            WriteTimeout = 1000
+        };
     }
 
     /// <inheritdoc/>
@@ -111,7 +120,7 @@ public sealed class SerialPortTransport : ITransport
 
         //Log.Info("Out: "+BitConverter.ToString(data).Replace("-", " ").ToLowerInvariant());
         _port.Write(data, 0, data.Length);
-        _port.BaseStream.Flush();
+        _port.Flush();
         return Task.CompletedTask;
     }
 
@@ -180,9 +189,11 @@ public sealed class SerialPortTransport : ITransport
     /// add the <c>System.Management</c> package. If the VID/PID probe fails, the method
     /// falls back to the lowest COM by natural sort.
     /// </remarks>
-    private static string GetComPort(string preferredPort = null)
+    private string GetComPort(string preferredPort = null)
     {
-        var ports = SerialPort.GetPortNames();
+        string[] ports;
+        try { using (var tmp = new SerialPortStream()) { ports = tmp.GetPortNames(); } }
+        catch { ports = Array.Empty<string>(); }
         if (ports.Length == 0)
             throw new InvalidOperationException("No serial ports found.");
 

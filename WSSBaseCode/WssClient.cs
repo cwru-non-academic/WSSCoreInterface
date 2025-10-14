@@ -19,7 +19,7 @@ public sealed class WssClient : IDisposable
     private readonly WSSVersionHandler _versionHandler;
 
     private readonly ConcurrentDictionary<(byte target, byte msgId), ConcurrentQueue<TaskCompletionSource<byte[]>>> _pending
-    = new();
+        = new ConcurrentDictionary<(byte target, byte msgId), ConcurrentQueue<TaskCompletionSource<byte[]>>>();
 
     /// <summary>
     /// Indicates whether the WSS client connection has been started.

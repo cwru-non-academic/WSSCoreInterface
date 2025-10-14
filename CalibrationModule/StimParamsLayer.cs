@@ -41,7 +41,8 @@ public sealed class StimParamsLayer : IStimParamsCore
         if (channel < 1 || channel > _totalChannels)
             throw new ArgumentOutOfRangeException(nameof(channel), $"Channel must be 1..{_totalChannels}.");
 
-        value01 = Math.Clamp(value01, 0f, 1f);
+        // Clamp without Math.Clamp for netstandard2.0
+        if (value01 < 0f) value01 = 0f; else if (value01 > 1f) value01 = 1f;
 
         string baseKey = $"stim.ch.{channel}";
         float amp  = _ctrl.TryGetStimParam($"{baseKey}.amp",   out var a) ? a : 1f;
@@ -51,7 +52,7 @@ public sealed class StimParamsLayer : IStimParamsCore
 
         if (pwHi < pwLo) { var tmp = pwLo; pwLo = pwHi; pwHi = tmp; }
 
-        _lastPw[channel - 1] = (int)MathF.Round(pwLo + (pwHi - pwLo) * value01);
+        _lastPw[channel - 1] = (int)Math.Round(pwLo + (pwHi - pwLo) * value01);
         _core.StimulateAnalog(channel, _lastPw[channel - 1], amp, (int)ipi);
     }
 
