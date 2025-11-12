@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WSS_Core_Interface")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+24e66fd33c82b6588991307a8b28e0bcc4beb239")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1b529a0e57d5b45af72996caebdca86bfddadd7a")]
 [assembly: System.Reflection.AssemblyProductAttribute("WSS_Core_Interface")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WSS_Core_Interface")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
